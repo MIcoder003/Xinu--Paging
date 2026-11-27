@@ -148,7 +148,6 @@ static	void	sysinit()
 	int32	i;
 	struct	procent	*prptr;		/* Ptr to process table entry	*/
 	struct	sentry	*semptr;	/* Ptr to semaphore table entry	*/
-
 	/* Reset the console */
 
 	kprintf(CONSOLE_RESET);
@@ -162,8 +161,6 @@ static	void	sysinit()
 	
 	meminit();
 
-	/* Initialize system variables */
-
 	/* Count the Null process as the first process in the system */
 
 	prcount = 1;
@@ -172,14 +169,14 @@ static	void	sysinit()
 
 	Defer.ndefers = 0;
 
-	/* Initialize process table entries free */
-
 	for (i = 0; i < NPROC; i++) {
 		prptr = &proctab[i];
 		prptr->prstate = PR_FREE;
 		prptr->prname[0] = NULLCH;
 		prptr->prstkbase = NULL;
 		prptr->prprio = 0;
+		prptr->pdbr = 0;
+		prptr->prvmap = NULL;
 	}
 
 	/* Initialize the Null process entry */	
@@ -192,6 +189,14 @@ static	void	sysinit()
 	prptr->prstklen = NULLSTK;
 	prptr->prstkptr = 0;
 	currpid = NULLPROC;
+
+	/* Initialize FFS, PT, global page tables, and turn on paging */
+	// set_evec(14, (uint32)pagefault_handler_disp);
+
+	/* Install the page fault handler, then turn on paging */
+
+	set_evec(14, (uint32)pagefault_handler_disp);
+	init_paging();
 	
 	/* Initialize semaphores */
 

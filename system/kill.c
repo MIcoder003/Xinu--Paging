@@ -31,6 +31,17 @@ syscall	kill(
 	}
 	freestk(prptr->prstkbase, prptr->prstklen);
 
+	if (prptr->prisuser == TRUE) {
+		free_pd(prptr->pdbr);
+		if (prptr->prvmap != NULL) {
+			freemem((char *)prptr->prvmap, VMAP_BYTES);
+		}
+		prptr->prvmap   = NULL;
+		prptr->prvpages = 0;
+		prptr->prisuser = FALSE;
+	}
+	prptr->pdbr = 0;
+
 	switch (prptr->prstate) {
 	case PR_CURR:
 		prptr->prstate = PR_FREE;	/* Suicide */
